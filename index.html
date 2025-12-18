@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Shorts 爆款搜尋器（自用版）</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button id="btnToggleFilters" class="iconBtn" aria-label="開關篩選面板">☰</button>
+    <div class="topbarTitle">
+      <div class="appTitle">YouTube Shorts 爆款搜尋器（自用）</div>
+      <div class="appSub" id="statusText">待命</div>
+    </div>
+
+    <div class="topbarRight">
+      <label class="smallLabel">
+        排序
+        <select id="sortBy">
+          <option value="views_desc">總觀看（High → Low）</option>
+          <option value="vpd_desc">日均（High → Low）</option>
+          <option value="recent_desc">最新上架</option>
+        </select>
+      </label>
+      <button id="btnClear" class="ghostBtn">清空</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside id="filters" class="filters">
+      <div class="panelTitle">安全設定（自用）</div>
+
+      <div class="field">
+        <label>Access Token（保存在本機）</label>
+        <input id="accessToken" type="password" placeholder="貼上你在 Worker 設的 ACCESS_TOKEN" />
+        <div class="hint">YouTube API Key 不會出現在瀏覽器；瀏覽器只保存此 Token。</div>
+      </div>
+
+      <div class="field">
+        <label>Worker Proxy Base（只需填一次）</label>
+        <input id="proxyBase" type="text" placeholder="https://xxxx.yourname.workers.dev" />
+        <div class="hint">請貼上你 Cloudflare Worker 的網址（結尾不要加 /）。</div>
+      </div>
+
+      <div class="panelTitle">搜尋條件</div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>關鍵字（逗號分隔）</label>
+          <input id="keywords" type="text" value="CAT, CUTE" />
+        </div>
+        <div class="field">
+          <label>Region Code</label>
+          <select id="regionCode">
+            <option value="US" selected>US</option>
+            <option value="JP">JP</option>
+            <option value="KR">KR</option>
+            <option value="TW">TW</option>
+            <option value="GB">GB</option>
+            <option value="CA">CA</option>
+            <option value="AU">AU</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>發布時間（近 N 天）</label>
+          <input id="days" type="number" min="1" max="365" value="10" />
+        </div>
+        <div class="field">
+          <label>搜尋深度（頁數）</label>
+          <input id="depthPages" type="number" min="1" max="10" value="3" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>結果上限（顯示）</label>
+          <input id="resultLimit" type="number" min="1" max="200" value="40" />
+        </div>
+        <div class="field">
+          <label>每頁抓取（建議 50）</label>
+          <input id="pageSize" type="number" min="5" max="50" value="50" />
+        </div>
+      </div>
+
+      <div class="panelTitle">篩選規則</div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>最低觀看數</label>
+          <input id="minViews" type="number" min="0" value="500000" />
+        </div>
+        <div class="field">
+          <label>最長秒數（Shorts 常用 60）</label>
+          <input id="maxDurationSec" type="number" min="1" max="240" value="60" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="row">
+          <input id="mustHaveShortsTag" type="checkbox" />
+          <span>標題/描述需包含 #shorts（更像 Shorts，但可能漏掉）</span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="btnSearch" class="primaryBtn">開始找爆款</button>
+        <button id="btnStop" class="dangerBtn" disabled>停止</button>
+      </div>
+
+      <div class="meta">
+        <div>估計配額（units）：<span id="quotaEstimate">—</span></div>
+        <div class="hint">search.list 約 100 units/次；videos.list 約 1 unit/次（每批 50 支）。</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="mainHeader">
+        <div class="foundText" id="foundText">尚未搜尋</div>
+        <div class="mainBtns">
+          <button id="btnExport" class="ghostBtn" disabled>匯出 CSV</button>
+          <button id="btnReload" class="ghostBtn" disabled>另存結果（快取）</button>
+        </div>
+      </div>
+
+      <div id="progressWrap" class="progressWrap hidden">
+        <div class="progressBar"><div id="progressBarInner" class="progressBarInner"></div></div>
+        <div class="progressText" id="progressText">—</div>
+      </div>
+
+      <section id="results" class="results"></section>
+
+      <footer class="footer">
+        <div class="hint">註：YouTube API 無 Shorts 專用搜尋端點，本工具用「短片 + 秒數」逼近 Shorts。</div>
+      </footer>
+    </main>
+  </div>
+
+  <div id="overlay" class="overlay hidden"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
